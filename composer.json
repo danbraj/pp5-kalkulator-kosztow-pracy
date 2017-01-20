@@ -1,0 +1,9 @@
+{
+  "name": "kalkulator-kosztow-pracy",
+  "description": "Kalkulator który pozwala wyliczyć wysokość wynagrodzenia dla każdej ze stron umowy.",
+  "autoload": {
+    "psr-4": {
+      "": "src/"
+    }
+  }
+}
