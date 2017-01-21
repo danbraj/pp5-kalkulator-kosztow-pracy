@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Kalkulator kosztów pracy</title>
+</head>
+
+<body>
+    <form method="post" action="kalkulator.php">
+        <label>
+            Wartość netto [zł]
+            <input name="kwota_netto" type="number"/>
+        </label>
+        <label>
+            Rodzaj umowy
+            <select name="typ_umowy">
+                <option value="0">Umowa zlecenie</option>
+                <option value="1">Umowa o dzieło</option>
+                <option value="2">Umowa o pracę</option>
+            </select>
+        </label>
+        <label>
+            Czy zapisać wynik?
+            <input type="checkbox" name="zapis"/>
+        </label>
+        <input type="submit"/>
+    </form>
+</body>
+
+</html>
