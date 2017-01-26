@@ -5,10 +5,12 @@ use \PDO;
 
 class DataBase {
 
-    static function connectDataBase() {
+    const FILE_NAME = 'moja_baza.sqlite';
+    private $pdo;
+
+    public function __construct() {
         try {
-            $pdo = new PDO("sqlite:baza.sqlite");
-            return $pdo;
+            $this->pdo = new PDO("sqlite:".self::FILE_NAME);
         }
         catch (PDOException $e) {
             echo $e->getMessage();
@@ -16,8 +18,8 @@ class DataBase {
         }
     }
 
-    static function createTableIfNotExists($pdo) {
-        $pdo->exec(
+    public function createTableIfNotExists() {
+        $this->pdo->exec(
             "CREATE TABLE IF NOT EXISTS rekordy (
             id INTEGER PRIMARY KEY,
             typ_umowy INTEGER,
@@ -28,24 +30,28 @@ class DataBase {
         );
     }
 
-    static function selectRow($pdo, $id) {
-        $query = $pdo->prepare('SELECT * FROM rekordy WHERE id = :id LIMIT 1');
+    public function deleteTable() {
+        $this->pdo->exec("DROP TABLE rekordy");
+    }
+
+    public function getRowById($id) {
+        $query = $this->pdo->prepare('SELECT * FROM rekordy WHERE id = :id LIMIT 1');
         $query->bindValue(':id', $id, PDO::PARAM_INT);
         $query->execute();
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
-    static function addRowToDataBaseAndReturnId($pdo, $idUmowy, $kwotaNetto, $kwotaBrutto, $kosztPracodawcy) {
-        $query = $pdo->prepare(
+    public function addRowToDataBaseAndGetId($row) {
+        $query = $this->pdo->prepare(
             'INSERT INTO rekordy (typ_umowy, kwota_netto, kwota_brutto, koszt_pracodawcy)
             VALUES (:typ_umowy, :kwota_netto, :kwota_brutto, :koszt_pracodawcy)'
         );
-        $query->bindValue(':typ_umowy', $idUmowy, PDO::PARAM_INT);
-        $query->bindValue(':kwota_netto', $kwotaNetto, PDO::PARAM_INT);
-        $query->bindValue(':kwota_brutto', $kwotaBrutto, PDO::PARAM_INT);
-        $query->bindValue(':koszt_pracodawcy', $kosztPracodawcy, PDO::PARAM_INT);
+        $query->bindValue(':typ_umowy', $row['typ_umowy'], PDO::PARAM_INT);
+        $query->bindValue(':kwota_netto', $row['kwota_netto'], PDO::PARAM_INT);
+        $query->bindValue(':kwota_brutto', $row['kwota_brutto'], PDO::PARAM_INT);
+        $query->bindValue(':koszt_pracodawcy', $row['koszt_pracodawcy'], PDO::PARAM_INT);
         $query->execute();
-        return $pdo->lastInsertId();
+        return $this->pdo->lastInsertId();
     }
 
 }

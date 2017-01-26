@@ -5,10 +5,12 @@ namespace KKP;
 class KKPApi {
 
     static $aUmowy = array("Umowa zlecenie", "Umowa o dzielo", "Umowa o prace");
+    static $isConsole;
+    static $pattern;
 
-    static function wyswietlOpisDzialania($sNazwaPliku) {
-        echo "\n\tSkladnia:\tphp {$sNazwaPliku} [kwota_netto] [typ_umowy] [zapis = false]\n";
-        echo "\t\t\tphp {$sNazwaPliku} -rekord [id]\n\n";
+    static function showProgramDescription($sFileName) {
+        echo "\n\tSkladnia:\tphp {$sFileName} [kwota_netto] [typ_umowy] [zapis = false]\n";
+        echo "\t\t\tphp {$sFileName} -rekord [id]\n\n";
         echo "\tid\t\tliczba\n";
         echo "\tkwota_netto\tliczba\n";
         echo "\ttyp_umowy\t0 => Umowa zlecenie\n";
@@ -17,23 +19,46 @@ class KKPApi {
         echo "\tzapis\t\twartosc logiczna (true, 1, false, 0)\n";
     }
 
-    static function obliczKosztyPracy($idUmowy, $kwotaNetto) {
+    static function isConsole() {
+        if (PHP_SAPI === 'cli') {
+            self::$pattern = "Rodzaj umowy: %s\nWartosc netto: %s\nWartosc brutto: %s\nKosz pracodawcy: %s";
+            self::$isConsole = true;
+            return true;
+        }
+        else {
+            self::$pattern = "<p>Rodzaj umowy: %s</p><p>Wartosc netto: %s</p><p>Wartosc brutto: %s</p><p>Kosz pracodawcy: %s</p>";
+            self::$isConsole = false;
+            return false;
+        }
+    }
+
+    static function showCalculationResult($row) {
+        echo sprintf(
+            self::$pattern,
+            self::$aUmowy[$row['typ_umowy']],
+            $row['kwota_netto'],
+            $row['kwota_brutto'],
+            $row['koszt_pracodawcy']
+        );
+    }
+
+    static function calculateCosts($idUmowy, $kwotaNetto) {
         switch ($idUmowy) {
             case 0:
                 // algorytm liczący wartości wynagrodzenia - umowa zlecenie
-                $wynik['kwota_brutto'] = 0;
-                $wynik['koszt_pracodawcy'] = 0;
+                $result['kwota_brutto'] = 0;
+                $result['koszt_pracodawcy'] = 0;
                 break;
             case 1:
                 // algorytm liczący wartości wynagrodzenia - umowa o dzieło
-                $wynik['kwota_brutto'] = 1;
-                $wynik['koszt_pracodawcy'] = 1;
+                $result['kwota_brutto'] = 1;
+                $result['koszt_pracodawcy'] = 1;
                 break;
             case 2:
                 // algorytm liczący wartości wynagrodzenia - umowa o pracę
-                $wynik['kwota_brutto'] = 2;
-                $wynik['koszt_pracodawcy'] = 2;
+                $result['kwota_brutto'] = 2;
+                $result['koszt_pracodawcy'] = 2;
         }
-        return $wynik;
+        return $result;
     }
 }
