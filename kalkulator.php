@@ -26,32 +26,15 @@ if (PHP_SAPI === 'cli') {
             }
             exit();
         }
-        else if (is_numeric($argv[1]) && is_numeric($argv[2]) && $argv[2] >= 0 && $argv[2] <= 2) {
+        else if (is_numeric($argv[1]) && is_numeric($argv[2]) && $argv[2] >= 0 && $argv[2] < 3) {
             $kwotaNetto = $argv[1];
             $idUmowy = $argv[2];
             $czyZapis = false;
             if (isset($argv[3]) && filter_var($argv[3], FILTER_VALIDATE_BOOLEAN)) $czyZapis = $argv[3];
             
-            switch ($idUmowy) {
-                case 0:
-                    // algorytm liczący wartości wynagrodzenia - umowa zlecenie
-                    $kwotaBrutto = 0;
-                    $kosztPracodawcy = 0;
-                    break;
-                case 1:
-                    // algorytm liczący wartości wynagrodzenia - umowa o dzieło
-                    $kwotaBrutto = 1;
-                    $kosztPracodawcy = 1;
-                    break;
-                case 2:
-                    // algorytm liczący wartości wynagrodzenia - umowa o pracę
-                    $kwotaBrutto = 2;
-                    $kosztPracodawcy = 2;
-                    break;
-                default:
-                    echo "Niepoprawny rodzaj umowy!";
-                    exit();
-            }
+            $result = KKPApi::obliczKosztyPracy($idUmowy, $kwotaNetto);
+            $kwotaBrutto = $result['kwota_brutto'];
+            $kosztPracodawcy = $result['koszt_pracodawcy'];
 
             echo sprintf(
                 "Rodzaj umowy: %s\nWartosc netto: %s\nWartosc brutto: %s\nKosz pracodawcy: %s",
@@ -75,6 +58,62 @@ if (PHP_SAPI === 'cli') {
     exit();
 }
 else {
-    echo "W budowie (WWW)";
-    exit();
+    if (isset($_GET['q']) && is_numeric($_GET['q'])) {  
+        
+        $pdo = DataBase::connectDataBase();
+        DataBase::createTableIfNotExists($pdo);
+
+        if ($rekord = DataBase::selectRow($pdo, $_GET['q'])) {
+            echo sprintf(
+                "<p>Rodzaj umowy: %s</p><p>Wartosc netto: %s</p><p>Wartosc brutto: %s</p><p>Kosz pracodawcy: %s</p>",
+                KKPApi::$aUmowy[$rekord['typ_umowy']],
+                $rekord['kwota_netto'],
+                $rekord['kwota_brutto'],
+                $rekord['koszt_pracodawcy']
+            );
+        }
+        else {
+            echo 'Nie ma zapisanego rekordu o takim id.';
+        }
+        exit();
+    }
+    else {
+        if (isset($_POST['kwota_netto']) && isset($_POST['typ_umowy'])) {
+            if (is_numeric($_POST['kwota_netto']) && is_numeric($_POST['typ_umowy']) && $_POST['typ_umowy'] >=0 && $_POST['typ_umowy'] < 3) {
+                $idUmowy = $_POST['typ_umowy'];
+                $kwotaNetto = $_POST['kwota_netto'];
+                if (isset($_POST['zapis'])) $czyZapis = true;
+                else $czyZapis = false;
+
+                $result = KKPApi::obliczKosztyPracy($idUmowy, $kwotaNetto);
+                $kwotaBrutto = $result['kwota_brutto'];
+                $kosztPracodawcy = $result['koszt_pracodawcy'];
+                
+                echo sprintf(
+                    "<p>Rodzaj umowy: %s</p><p>Wartosc netto: %s</p><p>Wartosc brutto: %s</p><p>Kosz pracodawcy: %s</p>",
+                    KKPApi::$aUmowy[$idUmowy],
+                    $kwotaNetto,
+                    $kwotaBrutto,
+                    $kosztPracodawcy
+                );
+
+                if ($czyZapis) {
+                    $pdo = DataBase::connectDataBase();
+                    DataBase::createTableIfNotExists($pdo);
+                    $lastID = DataBase::addRowToDataBaseAndReturnId($pdo, $idUmowy, $kwotaNetto, $kwotaBrutto, $kosztPracodawcy);
+                    $sLink = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'?q='.$lastID;
+                    echo "Mozesz odtworzyc ten wynik używając linka: <a href='{$sLink}'>{$sLink}</a>";
+                }
+                exit();
+            }
+            else {
+                echo 'Proszę nie kombinować!';
+                exit();
+            }
+        }
+        else {
+            require "formularz.html";
+            exit();
+        }
+    }
 }
