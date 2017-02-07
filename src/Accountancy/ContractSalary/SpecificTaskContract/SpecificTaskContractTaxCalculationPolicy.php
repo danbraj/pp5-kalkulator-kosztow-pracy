@@ -6,7 +6,7 @@ class SpecificTaskContractTaxCalculationPolicy extends \Accountancy\ContractSala
 
 	public function calculateFromNetValue($netValue) {
 		$this->netValue = $netValue;
-		$this->grossValue = 2;
-		$this->costOfEmployer = 2;
+		$this->grossValue = floor($netValue * 100 / 91);
+		$this->costOfEmployer = $this->grossValue;
 	}
 }

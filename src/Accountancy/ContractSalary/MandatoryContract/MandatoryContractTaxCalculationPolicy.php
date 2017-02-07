@@ -6,7 +6,7 @@ class MandatoryContractTaxCalculationPolicy extends \Accountancy\ContractSalary\
 
 	public function calculateFromNetValue($netValue) {
 		$this->netValue = $netValue;
-		$this->grossValue = 1;
-		$this->costOfEmployer = 1;
+		$this->grossValue = floor((100 * $netValue / 82) - (24030 / 82));
+		$this->costOfEmployer = floor($this->grossValue * 1.2061);
 	}
 }
