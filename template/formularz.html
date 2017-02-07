@@ -7,14 +7,14 @@
 </head>
 
 <body>
-    <form method="post" action="kalkulator.php">
+    <form method="post" action="kkp.php">
         <label>
             Wartość netto [zł]
-            <input name="kwota_netto" type="number"/>
+            <input name="netValue" type="number"/>
         </label>
         <label>
             Rodzaj umowy
-            <select name="typ_umowy">
+            <select name="contractId">
                 <option value="0">Umowa zlecenie</option>
                 <option value="1">Umowa o dzieło</option>
                 <option value="2">Umowa o pracę</option>
@@ -22,7 +22,7 @@
         </label>
         <label>
             Czy zapisać wynik?
-            <input type="checkbox" name="zapis"/>
+            <input type="checkbox" name="save"/>
         </label>
         <input type="submit"/>
     </form>
